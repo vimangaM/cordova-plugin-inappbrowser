@@ -84,11 +84,11 @@ static CDVUIInAppBrowser* instance = nil;
 
 - (BOOL) isSystemUrl:(NSURL*)url
 {
-	if ([[url host] isEqualToString:@"itunes.apple.com"]) {
-		return YES;
-	}
+    if ([[url host] isEqualToString:@"itunes.apple.com"]) {
+        return YES;
+    }
 
-	return NO;
+    return NO;
 }
 
 - (void)open:(CDVInvokedUrlCommand*)command
@@ -129,6 +129,8 @@ static CDVUIInAppBrowser* instance = nil;
     [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
+
+
 
 - (void)openInInAppBrowser:(NSURL*)url withOptions:(NSString*)options
 {
@@ -573,6 +575,8 @@ static CDVUIInAppBrowser* instance = nil;
 {
 }
 
+
+
 - (void)webViewDidFinishLoad:(UIWebView*)theWebView
 {
     if (self.callbackId != nil) {
@@ -620,6 +624,23 @@ static CDVUIInAppBrowser* instance = nil;
 
     _previousStatusBarStyle = -1; // this value was reset before reapplying it. caused statusbar to stay black on ios7
 }
+
+- (void)gosettings_
+{
+    [self hide:nil];
+    
+   if (self.callbackId != nil) {
+        // TODO: It would be more useful to return the URL the page is actually on (e.g. if it's been redirected).
+        NSString* url = [self.inAppBrowserViewController.currentURL absoluteString];
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                                      messageAsDictionary:@{@"type":@"loadstop", @"url":@"gotosettings"}];
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+    
+}
+
 
 @end
 
@@ -688,7 +709,7 @@ static CDVUIInAppBrowser* instance = nil;
 
     // custom button
     
-    CGRect screenRect = CGRectMake(10,20, 200.0, 50);
+    CGRect screenRect = CGRectMake(10,30, 200.0, 100);
     UIView* coverView = [[UIView alloc] initWithFrame:screenRect];
     coverView.backgroundColor = [UIColor clearColor];
     [self.view addSubview:coverView];
@@ -698,8 +719,17 @@ static CDVUIInAppBrowser* instance = nil;
     [coverView addGestureRecognizer:gesRecognizer];
     
     
+    CGRect settingRect = CGRectMake(self.webView.frame.size.width - 60 ,30, 200.0, 50);
+    UIView* settingRect_ = [[UIView alloc] initWithFrame:settingRect];
+    settingRect_.backgroundColor = [UIColor clearColor];
+    [self.view addSubview:settingRect_];
     
- 
+    UITapGestureRecognizer *ges_seting = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(gosettings)];
+    ges_seting.delegate = self;
+    [settingRect_ addGestureRecognizer:ges_seting];
+    
+    
+    
     [self.view addSubview:self.webView];
     [self.view sendSubviewToBack:self.webView];
     
@@ -832,10 +862,13 @@ static CDVUIInAppBrowser* instance = nil;
 
 - (void) setWebViewFrame : (CGRect) frame {
     NSLog(@"Setting the WebView's frame to %@", NSStringFromCGRect(frame));
+    
     frame.origin.y =  (frame.size.height / 4.8);
     frame.size.height = (frame.size.height / 3.8) * 3;
+   
     self.webView.contentMode = UIViewContentModeBottom;
     [self.webView setFrame:frame];
+    
 }
 
 - (void)setCloseButtonTitle:(NSString*)title : (NSString*) colorString : (int) buttonIndex
@@ -974,6 +1007,9 @@ static CDVUIInAppBrowser* instance = nil;
     
 }
 
+
+
+
 - (void)viewDidUnload
 {
     [self.webView loadHTMLString:nil baseURL:nil];
@@ -989,6 +1025,18 @@ static CDVUIInAppBrowser* instance = nil;
 - (BOOL)prefersStatusBarHidden {
     return YES;
 }
+
+
+- (void)gosettings
+{
+    
+    
+
+        [self.navigationDelegate gosettings_];
+    
+}
+
+
 
 - (void)close
 {
@@ -1014,6 +1062,10 @@ static CDVUIInAppBrowser* instance = nil;
         }
     });
 }
+
+
+
+
 
 - (void)navigateTo:(NSURL*)url
 {
